@@ -1,7 +1,8 @@
 # Cloudflare Worker for Three-Tier Continuous Assessment (brief §3.2, §11.3).
-# BLOCKED(user): create the D1 database ("npx wrangler d1 create three-tier-ca") and paste its id.
-# Secrets are set with "npx wrangler secret put NAME", never written here:
-#   SESSION_KEY, NIN_PEPPER, PAYSTACK_SECRET_KEY, ANTHROPIC_API_KEY, ADMIN_EMAILS
+# .github/workflows/worker.yml finds or creates the D1 database "three-tier-ca" and writes its id
+# below before each deploy; the placeholder is never used. Secrets are never written here: the
+# workflow generates SESSION_KEY and NIN_PEPPER once and copies ADMIN_EMAILS, PAYSTACK_SECRET_KEY
+# and ANTHROPIC_API_KEY from the repository's GitHub secrets.
 
 name = "three-tier-ca"
 main = "worker/src/index.mjs"

@@ -1,16 +1,24 @@
-# Deploys the Cloudflare Worker and applies the D1 migrations (brief §3.2, §11.3).
-# BLOCKED(user): this does nothing until the repository has the secrets CLOUDFLARE_API_TOKEN and
-# CLOUDFLARE_ACCOUNT_ID, and wrangler.toml has the real D1 database id.
+# Deploys the Cloudflare Worker (brief §3.2, §11.3). It needs only two repository secrets,
+# CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID; without them it skips. On each run it:
+#   1. finds the D1 database "three-tier-ca", creating it on the first run (primary in Western Europe);
+#   2. applies the migrations, then deploys;
+#   3. generates SESSION_KEY and NIN_PEPPER once (no person ever sees them), and copies ADMIN_EMAILS,
+#      PAYSTACK_SECRET_KEY and ANTHROPIC_API_KEY from repository secrets when they are set;
+#   4. checks that the Worker answers.
 name: Worker
 
 on:
   push:
     branches: [main]
-    paths: ['worker/**', 'shared/**', 'config/**', 'wrangler.toml', 'package-lock.json']
+    paths: ['worker/**', 'shared/**', 'config/**', 'wrangler.toml', 'package-lock.json', '.github/workflows/worker.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: worker
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -18,11 +26,15 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+      PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - name: Check for Cloudflare credentials
         id: creds
         run: |
-          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "No Cloudflare credentials yet: skipping the deploy."; fi
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "No Cloudflare credentials yet: skipping the deploy."; fi
       - uses: actions/checkout@v4
         if: steps.creds.outputs.ok == 'true'
       - uses: actions/setup-node@v4
@@ -33,7 +45,48 @@ jobs:
         run: npm ci
       - if: steps.creds.outputs.ok == 'true'
         run: node --test tests/*.test.mjs
-      - if: steps.creds.outputs.ok == 'true'
+
+      - name: Find or create the D1 database
+        if: steps.creds.outputs.ok == 'true'
+        run: |
+          lookup() { npx wrangler d1 list --json | node -e 'let s="";process.stdin.on("data",(d)=>(s+=d)).on("end",()=>{const d=JSON.parse(s).find((x)=>x.name==="three-tier-ca");process.stdout.write(d?String(d.uuid??d.id??""):"")})'; }
+          id="$(lookup)"
+          if [ -z "$id" ]; then npx wrangler d1 create three-tier-ca --location weur; id="$(lookup)"; fi
+          [ -n "$id" ] || { echo "could not find or create the database"; exit 1; }
+          sed -i "s/^database_id = .*/database_id = \"$id\"/" wrangler.toml
+          echo "D1 database three-tier-ca: $id"
+
+      - name: Apply the migrations
+        if: steps.creds.outputs.ok == 'true'
         run: npx wrangler d1 migrations apply three-tier-ca --remote
-      - if: steps.creds.outputs.ok == 'true'
-        run: npx wrangler deploy
+
+      - name: Deploy
+        if: steps.creds.outputs.ok == 'true'
+        run: npx wrangler deploy | tee deploy.log
+
+      - name: Secrets
+        if: steps.creds.outputs.ok == 'true'
+        run: |
+          have="$(npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",(d)=>(s+=d)).on("end",()=>console.log(JSON.parse(s).map((x)=>x.name).join("\n")))')"
+          for k in SESSION_KEY NIN_PEPPER; do
+            if ! grep -qx "$k" <<< "$have"; then openssl rand -hex 32 | npx wrangler secret put "$k" >/dev/null; echo "generated $k"; else echo "$k already set"; fi
+          done
+          for k in ADMIN_EMAILS PAYSTACK_SECRET_KEY ANTHROPIC_API_KEY; do
+            v="${!k}"
+            if [ -n "$v" ]; then printf '%s' "$v" | npx wrangler secret put "$k" >/dev/null; echo "set $k"; else echo "$k not provided"; fi
+          done
+
+      - name: Check that the Worker answers
+        if: steps.creds.outputs.ok == 'true'
+        run: |
+          url="$(grep -o 'https://[a-z0-9.-]*\.workers\.dev' deploy.log | head -1)"
+          echo "Worker: $url"
+          for i in $(seq 1 20); do
+            code="$(curl -s -o body.json -w '%{http_code}' "$url/api/pricing")"
+            [ "$code" = 200 ] && break
+            sleep 5
+          done
+          cat body.json; echo
+          [ "$code" = 200 ] || { echo "the Worker did not answer /api/pricing with 200 (got $code)"; exit 1; }
+          echo "unknown quiz: $(curl -s -o /dev/null -w '%{http_code}' "$url/api/q/ZZZZZZ") (404 expected: the database is reachable)"
+          echo "### Worker live at $url" >> "$GITHUB_STEP_SUMMARY"

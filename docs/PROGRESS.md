@@ -24,11 +24,11 @@ Labels:
 
 ## Waiting on the owner
 
-1. **Cloudflare.** Create the account (free plan) and an API token with Workers and D1 permissions.
-   Then:
-   - run `npx wrangler d1 create three-tier-ca` and put its id in `wrangler.toml`;
-   - set the secrets: `SESSION_KEY`, `NIN_PEPPER`, `ADMIN_EMAILS`, and the keys below;
-   - add the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+1. **Cloudflare.** Create the account (free plan), choose a neutral workers.dev subdomain, and create
+   an API token with Workers Scripts and D1 edit rights. Add the repository secrets
+   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` and `ADMIN_EMAILS`, then run the Worker workflow.
+   The workflow creates the database, applies the schema, deploys, and generates `SESSION_KEY` and
+   `NIN_PEPPER` itself.
 2. **Google.** Create an OAuth client (web) whose authorized origin is the Pages site. Put its client
    id in `wrangler.toml` and `web/config.js`.
 3. **Paystack.** Test keys first; live keys only on the owner's instruction. The webhook URL is
