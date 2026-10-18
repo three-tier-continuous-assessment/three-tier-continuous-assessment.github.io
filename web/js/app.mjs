@@ -51,4 +51,7 @@ if (cfg.mode === 'demo') {
   await startDemo();
 }
 window.addEventListener('hashchange', route);
+// Screens ask for a fresh render (after sign-in, sign-out, verification) instead of reloading the page,
+// which in the demo would drop writes that are still being saved to IndexedDB.
+window.addEventListener('ttca:rerender', route);
 route();

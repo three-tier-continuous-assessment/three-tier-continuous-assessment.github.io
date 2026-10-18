@@ -68,7 +68,7 @@ export default async function verify(root) {
     nin.value = '';
     if (x.status !== 200) { out3.replaceChildren(note(x.data.error, 'bad')); return; }
     out3.replaceChildren(note(x.data.status === 'passed' ? 'Verified.' : x.data.reason ?? x.data.status, x.data.status === 'passed' ? 'good' : 'warn'));
-    if (x.data.status === 'passed') setTimeout(() => location.reload(), 1200);
+    if (x.data.status === 'passed') setTimeout(() => window.dispatchEvent(new Event('ttca:rerender')), 1200);
   });
   root.append(h('div', { class: 'card' },
     h('h2', {}, 'Level 3 · NIN ', badge(L[3])),

@@ -12,7 +12,8 @@
     "test:local": "node --test tests/local/*.test.mjs",
     "smoke:flow": "node tools/browser-flow.mjs",
     "vendor": "node tools/vendor.mjs",
-    "domains": "node tools/update-domains.mjs"
+    "domains": "node tools/update-domains.mjs",
+    "check:pages": "tools/pages-check.sh"
   },
   "engines": {
     "node": ">=22.5"

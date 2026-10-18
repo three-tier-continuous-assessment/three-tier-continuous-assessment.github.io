@@ -49,7 +49,8 @@ createServer(async (req, res) => {
     }
     if (url.pathname === '/config.js') {
       res.writeHead(200, { 'content-type': TYPES['.js'], 'cache-control': 'no-store' });
-      res.end(`window.TTCA_CONFIG = { mode: 'dev', api: '', googleClientId: null };\n`);
+      // TTCA_MODE=demo serves the browser demo instead (the server then runs inside the page).
+      res.end(`window.TTCA_CONFIG = { mode: '${process.env.TTCA_MODE === 'demo' ? 'demo' : 'dev'}', api: '', googleClientId: null };\n`);
       return;
     }
     // Shared modules are served from the repository so the browser imports the same files.

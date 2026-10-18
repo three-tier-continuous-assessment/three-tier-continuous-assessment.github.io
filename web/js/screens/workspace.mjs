@@ -27,7 +27,7 @@ export default async function workspace(root, courseId, tab = 'notes') {
     h('div', { class: 'shrink row' },
       h('a', { class: 'btn', href: '#/verify', text: 'Verification' }),
       m.admin ? h('a', { class: 'btn', href: '#/admin', text: 'Admin' }) : null,
-      h('button', { onclick: () => { lecturer.clear(); location.hash = '#/w'; location.reload(); }, text: 'Sign out' }))));
+      h('button', { onclick: () => { lecturer.clear(); location.hash = '#/w'; window.dispatchEvent(new Event('ttca:rerender')); }, text: 'Sign out' }))));
 
   if (m.tier === 'none' && !m.admin) {
     root.append(h('h1', { text: 'Verification needed' }),
@@ -77,7 +77,7 @@ function signInView(root) {
     const r = await api('POST', '/api/auth/google', { id_token: idToken });
     if (r.status !== 200) { toast(r.data.error ?? 'Sign-in failed'); return; }
     lecturer.save(r.data.token, r.data);
-    location.reload();
+    window.dispatchEvent(new Event('ttca:rerender'));
   } });
 }
 

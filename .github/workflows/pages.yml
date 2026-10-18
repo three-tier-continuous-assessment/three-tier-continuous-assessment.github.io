@@ -1,0 +1,57 @@
+# Tests, then deploys the static site to GitHub Pages (brief §3.1). A failing test never goes live.
+# The site is web/ plus the modules it imports: shared/, worker/ (for the browser demo) and config/.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests/*.test.mjs
+      - name: Browser suites
+        run: |
+          MEMORY=1 node tools/dev-server.mjs 8790 > dev-server.log 2>&1 &
+          geckodriver --port 4444 > geckodriver.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8790/ >/dev/null && curl -sf http://localhost:4444/status >/dev/null && break; sleep 1; done
+          node tools/mobile-smoke.mjs
+          node tools/browser-flow.mjs
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/worker _site/config
+          cp -r web/. _site/
+          cp -r shared _site/shared
+          cp -r worker/src worker/migrations worker/data _site/worker/
+          cp config/*.json _site/config/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

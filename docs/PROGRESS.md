@@ -1,0 +1,44 @@
+# Progress
+
+Labels:
+- DONE: implemented and tested;
+- MOCKED: works against a local fake;
+- BLOCKED(user): needs an account, a credential or a decision.
+
+## State
+
+| Area | Status | Evidence |
+|---|---|---|
+| Unique seat orders, timing, marking, CSV | DONE | `tests/order`, `timing`, `grade`, `csv` |
+| Pool parsers (Aiken, GIFT, CSV, numbered), CA schedules, notes model, grounding | DONE | `tests/parse`, `schedule`, `notes`, `grounding` |
+| Request handler: identity, material, quizzes, sittings, payments, reports, admin | DONE | `tests/api.test.mjs`, 9 end-to-end flows, including 300 parallel check-ins |
+| Web app: notes from the phone, review, quizzes, results, sittings, verification | DONE | `npm run smoke:flow` (23 checks), `npm run smoke:mobile` (360, 390 and 768 px) |
+| Browser demo (handler on sql.js, state in IndexedDB) | DONE | `smoke:flow` with `TTCA_MODE=demo` |
+| Worker bundle and runtime | DONE | `wrangler deploy --dry-run` (258 KiB gzip); boots in workerd with local D1 |
+| Google sign-in | MOCKED | simulated accounts in development and demo; the real verifier rejects malformed tokens |
+| Paystack | MOCKED | fake provider and test checkout; the real client is untested without keys |
+| Generation, re-solve, transcription, AI assist (Claude) | MOCKED | deterministic fake model; the Claude client follows the SDK documentation but has not been called |
+| NIN verification | MOCKED | fake provider; no real provider chosen |
+| Live deployment of the Worker | BLOCKED(user) | needs a Cloudflare account, an API token, a D1 database and the secrets |
+
+## Waiting on the owner
+
+1. **Cloudflare.** Create the account (free plan) and an API token with Workers and D1 permissions.
+   Then:
+   - run `npx wrangler d1 create three-tier-ca` and put its id in `wrangler.toml`;
+   - set the secrets: `SESSION_KEY`, `NIN_PEPPER`, `ADMIN_EMAILS`, and the keys below;
+   - add the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+2. **Google.** Create an OAuth client (web) whose authorized origin is the Pages site. Put its client
+   id in `wrangler.toml` and `web/config.js`.
+3. **Paystack.** Test keys first; live keys only on the owner's instruction. The webhook URL is
+   `<worker>/api/pay/webhook`.
+4. **Anthropic API key**, to switch generation and transcription from the fake to Claude. The default
+   model is `claude-opus-5`, set in config. Pricing for AI use, and the choice of model, belong to the
+   owner.
+5. **NIN provider.** Choose one, open its business account, and decide who pays per lookup.
+6. **Pending decisions:**
+   - how school teachers without institutional email get in;
+   - whether polytechnics and colleges of education (`.edu.ng`) pass Level 1;
+   - international cards;
+   - ORCID membership, for automatic Level 2;
+   - the legal review of children's data (see SECURITY.md).

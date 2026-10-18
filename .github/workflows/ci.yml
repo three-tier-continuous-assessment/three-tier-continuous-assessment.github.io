@@ -1,0 +1,44 @@
+# Unit, integration and browser tests on every pull request and on pushes to branches other than main
+# (main is tested by pages.yml before it deploys). No npm install is needed: the tests use only
+# Node's built-ins, and the browser libraries are vendored.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests/*.test.mjs
+
+  browser:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Start the development server and geckodriver
+        run: |
+          MEMORY=1 node tools/dev-server.mjs 8790 > dev-server.log 2>&1 &
+          geckodriver --port 4444 > geckodriver.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8790/ >/dev/null && curl -sf http://localhost:4444/status >/dev/null && break; sleep 1; done
+      - run: node tools/mobile-smoke.mjs
+      - run: node tools/browser-flow.mjs
+      - name: Browser demo (the server inside the page)
+        run: |
+          pkill -f '^node tools/dev-server.mjs' || true
+          TTCA_MODE=demo MEMORY=1 node tools/dev-server.mjs 8790 > dev-server-demo.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8790/ >/dev/null && break; sleep 1; done
+          node tools/browser-flow.mjs
