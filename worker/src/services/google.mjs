@@ -33,7 +33,13 @@ export function googleVerifier({ clientId, now = () => Date.now(), fetchImpl = (
       const parts = String(idToken ?? '').split('.');
       if (parts.length !== 3) throw new Error('malformed ID token');
       const [h, p, s] = parts;
-      const header = decode(h), claims = decode(p);
+      let header, claims;
+      try {
+        header = decode(h);
+        claims = decode(p);
+      } catch {
+        throw new Error('malformed ID token');
+      }
       if (header.alg !== 'RS256') throw new Error('unexpected token algorithm');
       let jwk = (await keys()).find((k) => k.kid === header.kid);
       if (!jwk) jwk = (await keys(true)).find((k) => k.kid === header.kid);
