@@ -7,3 +7,4 @@ node_modules/
 tests/fixtures/local/
 *.sqlite
 *.sqlite3
+tests/local/
