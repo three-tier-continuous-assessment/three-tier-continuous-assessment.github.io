@@ -1,5 +1,5 @@
 import { h, naira } from '../dom.mjs';
-import { api } from '../api.mjs';
+import { api, cfg, demoQuery } from '../api.mjs';
 
 export default async function landing(root) {
   const code = h('input', { id: 'qcode', inputmode: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', maxlength: 8, placeholder: 'e.g. 7K3QX2' });
@@ -23,5 +23,8 @@ export default async function landing(root) {
     p ? h('p', { class: 'small muted' },
       `Sitting a quiz is free. Your own result: ${naira(p.student_result.price)} (${p.student_result.unit}). `,
       `Class report: ${naira(p.class_report.price)} (${p.class_report.unit}).`) : null,
+    cfg.mode === 'live' ? h('p', { class: 'small muted' }, 'To try it first, open ', h('a', { href: '?demo', text: 'the demo' }),
+      ', which runs in your browser and stores nothing on a server.') : null,
+    demoQuery ? h('p', { class: 'small muted' }, 'This is the demo. ', h('a', { href: location.pathname, text: 'Go to the real site' }), '.') : null,
   );
 }

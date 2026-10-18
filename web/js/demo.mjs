@@ -2,7 +2,7 @@
 // (SQLite compiled to WebAssembly) with fake Google, Paystack, model and NIN services.
 // Nothing reaches a server; the database is kept in this browser's IndexedDB.
 
-import { useLocalServer } from './api.mjs';
+import { useLocalServer, siteUrl, KEY } from './api.mjs';
 import { createApp } from '../worker/src/app.mjs';
 import { fakeGoogleVerifier } from '../worker/src/services/google.mjs';
 import { fakePaystack } from '../worker/src/services/paystack.mjs';
@@ -151,7 +151,7 @@ export async function startDemo() {
     config: { pricing, tiers, isListedDomain: (d) => listed.has(d), extraDomains: ['example.edu'], blockedDomains: [], studentPatterns: {} },
     services: {
       google: fakeGoogleVerifier(),
-      paystack: fakePaystack({ siteOrigin: site }),
+      paystack: fakePaystack({ siteOrigin: siteUrl() }),
       ai: fakeAI(),
       nin: fakeNinProvider({ [DEMO_NIN.nin]: DEMO_NIN.record }),
     },
@@ -163,5 +163,5 @@ export async function startDemo() {
 /** Clears the demo database and this browser's demo sessions. */
 export async function resetDemo() {
   await idbSet(DB_KEY, null);
-  for (const k of Object.keys(localStorage)) if (k.startsWith('ttca.')) localStorage.removeItem(k);
+  for (const k of Object.keys(localStorage)) if (k.startsWith(KEY)) localStorage.removeItem(k);
 }

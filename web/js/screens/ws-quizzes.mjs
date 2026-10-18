@@ -2,7 +2,7 @@
 // generation, questions from the pool, the roster and codes, publication and sharing.
 
 import { h, field, note, toast, busy, fmtDate, toLocalInput, fromLocalInput } from '../dom.mjs';
-import { api, store } from '../api.mjs';
+import { api, store, siteUrl } from '../api.mjs';
 import { timingFields, describeSelection } from '../ui.mjs';
 import { fittingConfigs, defaultCount } from '../../shared/timing.mjs';
 
@@ -160,7 +160,7 @@ export default async function quizzesTab(root, { course, me, token }) {
   // ------------------------------------------------------------ published
 
   async function publishedView(z) {
-    const link = `${location.origin}${location.pathname}#/q/${z.code}`;
+    const link = siteUrl(`#/q/${z.code}`);
     const share = `https://wa.me/?text=${encodeURIComponent(`${z.title}\n${link}`)}`;
     const statusEl = h('div');
     const refresh = async () => {

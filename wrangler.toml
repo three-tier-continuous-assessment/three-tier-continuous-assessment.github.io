@@ -17,4 +17,4 @@ migrations_dir = "worker/migrations"
 
 [vars]
 SITE_ORIGIN = "https://three-tier-continuous-assessment.github.io"
-GOOGLE_CLIENT_ID = "BLOCKED-user-create-an-OAuth-client"
+GOOGLE_CLIENT_ID = "845950129825-9nmr7otvmm2uta704vq35t9kmv6vesgn.apps.googleusercontent.com"

@@ -3,7 +3,7 @@
 // a monotonic clock, so changing the phone's time changes nothing.
 
 import { h, field, note, fmtSecs, fmtDate, fmtDay, naira, toast } from '../dom.mjs';
-import { api, attempt, store } from '../api.mjs';
+import { api, attempt, store, siteUrl } from '../api.mjs';
 import { rich } from '../render.mjs';
 import { googleSignIn } from '../signin.mjs';
 
@@ -263,7 +263,7 @@ export default async function quiz(root, codeRaw) {
   function slip(d) {
     const topMm = Number(store.get('print.topmm') ?? 0);
     const margin = h('input', { type: 'number', min: 0, max: 120, value: topMm, inputmode: 'numeric' });
-    const verifyUrl = `${location.origin}${location.pathname}#/r/${d.result_id}`;
+    const verifyUrl = siteUrl(`#/r/${d.result_id}`);
     const el = h('div', { class: 'card slip', style: { '--top-mm': `${topMm}mm` } },
       h('div', { class: 'print-margin' }),
       h('h1', { text: 'Continuous assessment: statement of result' }),
