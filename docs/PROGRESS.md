@@ -15,8 +15,8 @@ Labels:
 | Web app: notes from the phone, review, quizzes, results, sittings, verification | DONE | `npm run smoke:flow` (23 checks), `npm run smoke:mobile` (360, 390 and 768 px) |
 | Browser demo (handler on sql.js, state in IndexedDB) | DONE | `smoke:flow` with `TTCA_MODE=demo` |
 | Worker bundle and runtime | DONE | `wrangler deploy --dry-run` (258 KiB gzip); boots in workerd with local D1 |
-| Live site (demo mode) | DONE | https://three-tier-continuous-assessment.github.io/, deployed by `pages.yml` (GitHub Actions source) after tests pass; the browser flow passes 23 checks against it |
-| Google sign-in | MOCKED | simulated accounts in development and demo; the real verifier rejects malformed tokens |
+| Live site | DONE | https://three-tier-continuous-assessment.github.io/ uses the Worker and real Google sign-in; the demo is at `?demo`. Deployed by `pages.yml` (GitHub Actions source) after tests pass; the browser flow passes 23 checks against `?demo` |
+| Google sign-in | DONE; first real sign-in pending | OAuth web client for the Pages origin; Google confirms the client exists. The Worker checks signature, issuer, audience and expiry. Simulated accounts remain in development and the demo |
 | Paystack | MOCKED | fake provider and test checkout; the real client is untested without keys |
 | Generation, re-solve, transcription, AI assist (Claude) | MOCKED | deterministic fake model; the Claude client follows the SDK documentation but has not been called |
 | NIN verification | MOCKED | fake provider; no real provider chosen |
@@ -26,9 +26,9 @@ Labels:
 
 1. **Cloudflare.** Done: the Worker is live and the database exists. Every push that touches the
    server redeploys through `worker.yml`.
-2. **Google.** Create an OAuth client (web) whose authorized origin is the Pages site. Put its client
-   id in `wrangler.toml` and `web/config.js`. Then switch `web/config.js` to
-   `{ mode: 'live', api: 'https://three-tier-ca.three-tier-ca.workers.dev', googleClientId: '…' }`.
+2. **Google.** Done: an OAuth web client whose only authorized origin is the Pages site. Its id is in
+   `wrangler.toml` and `web/config.js`. The app stays in Testing (DECISIONS 17). Next: the owner's first
+   sign-in with the UNN account.
 3. **Paystack.** Test keys first; live keys only on the owner's instruction. The webhook URL is
    `<worker>/api/pay/webhook`.
 4. **Anthropic API key**, to switch generation and transcription from the fake to Claude. The default

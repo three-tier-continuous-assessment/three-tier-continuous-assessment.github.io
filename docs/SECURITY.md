@@ -10,6 +10,7 @@
 | Late answers after looking things up | An answer counts only until the slot's close plus the grace period, by the server's receipt time. |
 | Copying a neighbour | Each seat has a distinct question order (guaranteed) and its own option order. |
 | One candidate on several devices | The newest session wins. Older tokens receive 409. The switch is logged. |
+| Forged Google sign-in | The Worker verifies every ID token: RS256 signature against Google's published keys, issuer, audience (this site's client ID) and expiry. The OAuth client has no redirect URIs, and its secret is used nowhere. |
 | Impersonation at check-in | A roster email must match the Google account. A claimed registration number cannot be taken by another account, and the attempt is logged for the lecturer. Codes are 8 characters, stored hashed, and rate-limited on failure. |
 | Unlocking without paying | The server verifies each payment with Paystack's secret key: status, amount, currency and reference. Webhooks are checked with HMAC-SHA512 in constant time. Entitlements are unique, so replays change nothing. |
 | Cross-lecturer access | Every handler resolves session, then role, then owner scope through one function, and tests try cross-owner access. |
@@ -17,6 +18,7 @@
 | CSRF | Tokens travel in the Authorization header, with no cookies. |
 | Floods | Per-IP ceilings are set high enough for a class behind one NAT. Failed codes, sign-ins, generation, NIN checks and payment starts are limited per subject. |
 | Fakes in production | The Worker entry uses real services only. Without Paystack keys, payments answer 503. |
+| The demo beside the live site | The demo at `?demo` runs in the browser and never calls the Worker. It keeps its own storage keys, so resetting it cannot sign anyone out of the live site. |
 
 ## Personal data
 

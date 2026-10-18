@@ -33,7 +33,8 @@ the change here.
    - A framework or build chain.
 6. **One handler, three runtimes.** The handler uses only web-standard APIs. It runs on Workers with D1
    in production, on `node:sqlite` in development and tests, and on sql.js in the browser demo. The
-   demo lets GitHub Pages show the working system before any Cloudflare account exists.
+   demo stays on the live site at `?demo`, with its own storage keys, so that anyone can try the
+   system without an account.
 7. **Plain HTML, CSS and ES modules.** Hash routes keep WhatsApp deep links from returning 404 on Pages.
    Browser libraries are vendored with pinned versions and load only where needed. The quiz page is
    12 kB gzipped.
@@ -84,3 +85,9 @@ the change here.
     - Late registrants take spare seats in order of arrival and are flagged for the lecturer.
     - Codes are offered for pupils; Google sign-in suits everyone else.
     - The newest session wins.
+17. **Google sign-in stays in Testing.**
+    - The site asks Google only for name, email address and profile. Google exempts such apps from the
+      test-user list, from the warning screen and from the seven-day expiry, so publishing is not needed.
+    - Publishing would need a home page, a privacy policy and an authorized domain on the Branding page.
+    - The OAuth client has one authorized JavaScript origin, the Pages site, and no redirect URIs. Its
+      client secret is used nowhere.

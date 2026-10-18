@@ -4,7 +4,8 @@ Lecturers and teachers turn their own notes into timed continuous-assessment qui
 free in a phone, tablet or desktop browser, and the result is ready seconds after the last question.
 A student pays ₦100 to see their own result; a lecturer pays ₦500 for the class report (PDF and CSV).
 
-Live, in demo mode: **https://three-tier-continuous-assessment.github.io/**
+Live: **https://three-tier-continuous-assessment.github.io/**. The demo, which runs entirely in the
+browser and stores nothing on a server: https://three-tier-continuous-assessment.github.io/?demo
 
 - **Notes in.** Lecturers send photos of handwritten or typed pages, CamScanner scans, PDF, Word,
   LaTeX, Markdown or text, straight from the phone. Scans and photos are transcribed by the model and
@@ -48,11 +49,11 @@ npm run smoke:flow          # lecturer to candidate to payment to report, throug
 ## Deploy
 
 - **GitHub Pages** (`.github/workflows/pages.yml`) runs every test, then publishes `web/` with the
-  modules it imports. Until the Worker exists, `web/config.js` sets `mode: 'demo'`, so the site runs
-  the real server code in the visitor's browser and labels itself as a demo.
-- **Cloudflare Worker** (`.github/workflows/worker.yml`, `wrangler.toml`): see
-  [docs/PROGRESS.md](docs/PROGRESS.md) for the accounts and secrets it waits for. Then set
-  `web/config.js` to `{ mode: 'live', api: '<worker URL>', googleClientId: '<client id>' }`.
+  modules it imports. `web/config.js` points the site at the Worker and the Google OAuth client. With
+  `?demo` in the address, the site instead runs the real server code in the visitor's browser,
+  labelled as a demo and with its own storage.
+- **Cloudflare Worker** (`.github/workflows/worker.yml`, `wrangler.toml`): every push that touches the
+  server redeploys it. [docs/PROGRESS.md](docs/PROGRESS.md) lists the keys it still waits for.
 
 ## Layout
 
