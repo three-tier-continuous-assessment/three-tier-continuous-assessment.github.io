@@ -13,5 +13,14 @@
   },
   "engines": {
     "node": ">=22.5"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.135.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.1"
+  },
+  "allowScripts": {
+    "workerd@1.20261012.1": true
   }
 }

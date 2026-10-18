@@ -1,0 +1,19 @@
+# Cloudflare Worker for Three-Tier Continuous Assessment (brief §3.2, §11.3).
+# BLOCKED(user): create the D1 database ("npx wrangler d1 create three-tier-ca") and paste its id.
+# Secrets are set with "npx wrangler secret put NAME", never written here:
+#   SESSION_KEY, NIN_PEPPER, PAYSTACK_SECRET_KEY, ANTHROPIC_API_KEY, ADMIN_EMAILS
+
+name = "three-tier-ca"
+main = "worker/src/index.mjs"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "three-tier-ca"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "worker/migrations"
+
+[vars]
+SITE_ORIGIN = "https://three-tier-continuous-assessment.github.io"
+GOOGLE_CLIENT_ID = "BLOCKED-user-create-an-OAuth-client"

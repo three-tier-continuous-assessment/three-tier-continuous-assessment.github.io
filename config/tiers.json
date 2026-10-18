@@ -1,0 +1,6 @@
+{
+  "gold_only": ["open_sitting", "certified_mark"],
+  "level1_valid_days": 365,
+  "level2_code_days": 14,
+  "ai_monthly_quota_usd": 5
+}

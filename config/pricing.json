@@ -1,0 +1,8 @@
+{
+  "currency": "NGN",
+  "products": {
+    "student_result": { "price": 100, "unit": "per attempt", "label": "Your result" },
+    "class_report": { "price": 500, "unit": "per quiz, per lecturer (PDF and CSV)", "label": "Class report" },
+    "bulk_unlock": { "price": 100, "unit": "per candidate", "label": "Results for chosen candidates" }
+  }
+}

@@ -8,3 +8,4 @@ tests/fixtures/local/
 *.sqlite
 *.sqlite3
 tests/local/
+.dev/
