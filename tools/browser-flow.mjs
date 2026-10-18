@@ -31,9 +31,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const session = await call('POST', '/session', { capabilities: { alwaysMatch: { browserName: 'firefox', 'moz:firefoxOptions': { args: ['-headless'] } } } });
 const sid = session.sessionId;
 const exec = (script, args = []) => call('POST', `/session/${sid}/execute/sync`, { script, args });
-// The app runs in an iframe at phone size (see /__phone in the development server).
+// The app runs in an iframe at phone size (see /__phone in the development server). Against a
+// site without the harness (the live Pages site), it runs at the top level, where headless Firefox
+// lays out at no less than 500 px.
 const W = 390, H = 844;
+const harness = (await fetch(new URL('__phone', APP)).catch(() => ({ ok: false }))).ok;
 async function go(hash) {
+  if (!harness) {
+    await call('POST', `/session/${sid}/url`, { url: new URL(hash, APP).href });
+    return;
+  }
   await call('POST', `/session/${sid}/frame/parent`, {}).catch(() => {});
   await exec(`document.getElementById('phone').contentWindow.location.hash = ${JSON.stringify(hash)}; return true;`);
   const frame = await call('POST', `/session/${sid}/element`, { using: 'css selector', value: '#phone' });
@@ -75,7 +82,8 @@ const setValue = (selector, value) => exec(`const el = document.querySelector(${
 
 try {
   await call('POST', `/session/${sid}/window/rect`, { width: 520, height: 1000, x: 0, y: 0 });
-  await call('POST', `/session/${sid}/url`, { url: new URL(`__phone?w=${W}&h=${H}`, APP).href });
+  if (harness) await call('POST', `/session/${sid}/url`, { url: new URL(`__phone?w=${W}&h=${H}`, APP).href });
+  else console.log('  (no phone harness on this site: running at the top level, 500 px)');
   console.log(`\nBrowser flow against ${APP}\n`);
 
   // Lecturer signs in with a simulated Workspace account.
