@@ -15,6 +15,7 @@ Labels:
 | Web app: notes from the phone, review, quizzes, results, sittings, verification | DONE | `npm run smoke:flow` (23 checks), `npm run smoke:mobile` (360, 390 and 768 px) |
 | Browser demo (handler on sql.js, state in IndexedDB) | DONE | `smoke:flow` with `TTCA_MODE=demo` |
 | Worker bundle and runtime | DONE | `wrangler deploy --dry-run` (258 KiB gzip); boots in workerd with local D1 |
+| Live site (demo mode) | DONE | https://three-tier-continuous-assessment.github.io/, deployed by `pages.yml` (GitHub Actions source) after tests pass; the browser flow passes 23 checks against it |
 | Google sign-in | MOCKED | simulated accounts in development and demo; the real verifier rejects malformed tokens |
 | Paystack | MOCKED | fake provider and test checkout; the real client is untested without keys |
 | Generation, re-solve, transcription, AI assist (Claude) | MOCKED | deterministic fake model; the Claude client follows the SDK documentation but has not been called |

@@ -2,6 +2,8 @@
 
 Lecturers and teachers turn their own notes into timed continuous-assessment quizzes. Students sit them
 free in a phone, tablet or desktop browser, and the result is ready seconds after the last question.
+
+Live (demo mode): **https://three-tier-continuous-assessment.github.io/**
 A student pays ₦100 to see their own result; a lecturer pays ₦500 for the class report (PDF and CSV).
 
 - **Notes in.** Lecturers send photos of handwritten or typed pages, CamScanner scans, PDF, Word,
