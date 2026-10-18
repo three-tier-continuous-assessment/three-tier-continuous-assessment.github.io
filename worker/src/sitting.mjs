@@ -24,6 +24,7 @@ export async function quizCard(ctx, z) {
     duration: z.duration, pace: z.pace, count: z.count, grace: z.grace, opens_at: z.opens_at, last_start: z.last_start,
     open_sitting: !!z.open_sitting, roster: z.roster_size > 0, gold: !!z.gold,
     length_seconds: z.count * z.pace,
+    server_now: ctx.now,
   };
 }
 
@@ -184,7 +185,7 @@ async function sittingQuestion(ctx, z, qid) {
 export async function slot(ctx) {
   const { a, z } = await requireAttempt(ctx);
   if (a.status === 'void') return json({ void: true, reason: a.void_reason });
-  if (!a.t0) fail(409, 'press Start first');
+  if (!a.t0) fail(409, 'press Start first', { needs_start: true, server_now: ctx.now });
   const k = currentSlot(a.t0, z.pace, z.count, ctx.now);
   if (k > z.count) {
     await finalize(ctx, a, z);

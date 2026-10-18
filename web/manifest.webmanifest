@@ -1,0 +1,9 @@
+{
+  "name": "Three-Tier Continuous Assessment",
+  "short_name": "Three-Tier CA",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f5132",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

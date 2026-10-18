@@ -39,6 +39,14 @@ createServer(async (req, res) => {
       res.end(Buffer.from(await r.arrayBuffer()));
       return;
     }
+    if (url.pathname === '/__phone') {
+      // Test harness (development only): the app in an iframe at an exact phone size, because
+      // headless Firefox will not lay out a window narrower than 500 CSS pixels.
+      const w = Number(url.searchParams.get('w')) || 390, ht = Number(url.searchParams.get('h')) || 844;
+      res.writeHead(200, { 'content-type': TYPES['.html'], 'cache-control': 'no-store' });
+      res.end(`<!doctype html><meta charset="utf-8"><style>body{margin:0}</style><iframe id="phone" src="/#/" style="border:0;width:${w}px;height:${ht}px"></iframe>`);
+      return;
+    }
     if (url.pathname === '/config.js') {
       res.writeHead(200, { 'content-type': TYPES['.js'], 'cache-control': 'no-store' });
       res.end(`window.TTCA_CONFIG = { mode: 'dev', api: '', googleClientId: null };\n`);
@@ -46,7 +54,7 @@ createServer(async (req, res) => {
     }
     // Shared modules are served from the repository so the browser imports the same files.
     let file;
-    if (url.pathname.startsWith('/shared/')) file = normalize(join(repo, url.pathname));
+    if (/^\/(shared|worker|config)\//.test(url.pathname)) file = normalize(join(repo, url.pathname));
     else file = normalize(join(root, url.pathname === '/' ? 'index.html' : url.pathname));
     if (!file.startsWith(repo)) throw Object.assign(new Error('forbidden'), { code: 'EACCES' });
     const data = await readFile(file);

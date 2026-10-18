@@ -127,7 +127,7 @@ export async function addNote(ctx) {
     ['INSERT INTO notes (id, course_id, name, kind, first_page, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       id, course.id, String(b.name ?? 'Notes').slice(0, 200), b.kind, first, pos.p, ctx.now],
     ...pages.map((p, i) => ['INSERT INTO note_pages (note_id, idx, printed, text, hash, transcribed, confirmed) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      id, i, Number.isInteger(p.printed) ? p.printed : null, p.text, sha256Hex(p.text), p.transcribed ? 1 : 0, p.transcribed ? 0 : 1]),
+      id, i, Number.isInteger(p.printed) ? p.printed : null, p.text, sha256Hex(p.text), p.transcribed ? 1 : 0, p.transcribed && !p.confirmed ? 0 : 1]),
   ]);
   await markSourceChanges(ctx, course.id);
   return json({ id, pages: pages.length }, 201);
